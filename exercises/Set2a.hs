@@ -46,7 +46,7 @@ takeFinal n xs = drop (length xs - n) xs
 --   updateAt 2 0 [4,5,6,7] ==>  [4,5,0,7]
 
 updateAt :: Int -> a -> [a] -> [a]
-updateAt i x xs = (++) ((++) (take i xs) [x]) (drop (i + 1) xs) 
+updateAt i x xs = take i xs ++ [x] ++ drop (i + 1) xs 
 
 ------------------------------------------------------------------------------
 -- Ex 4: substring i j s should return the substring of s starting at
@@ -119,8 +119,8 @@ safeDiv x y = if y /= 0 then Just (x `div` y) else Nothing
 --   greet "John" (Just "Smith")  ==> "Hello, John Smith!"
 
 greet :: String -> Maybe String -> String
-greet first Nothing = (++) ((++) "Hello, " first) "!"
-greet first (Just last) = greet ((++) ((++) first " ") last) Nothing
+greet first Nothing = "Hello, " ++ first ++ "!"
+greet first (Just last) = greet (first ++ " " ++ last) Nothing
 
 ------------------------------------------------------------------------------
 -- Ex 9: safe list indexing. Define a function safeIndex so that
@@ -147,7 +147,7 @@ safeIndex xs i = if i <= length xs - 1 && i >= 0 then Just ((!!) xs i) else Noth
 --   eitherDiv 4 0   ==> Left "4/0"
 
 eitherDiv :: Integer -> Integer -> Either String Integer
-eitherDiv x 0 = Left ((++) (show x) "/0")
+eitherDiv x 0 = Left (show x ++ "/0")
 eitherDiv x y = Right (x `div` y)
 
 ------------------------------------------------------------------------------
