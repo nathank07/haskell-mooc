@@ -39,7 +39,7 @@ allEqual [] = True
 allEqual [x] = True
 allEqual [x, y] = x == y
 allEqual [x, y, z] = x == y && y == z
-allEqual xs = head xs == last xs && (allEqual $ (init . tail) xs)
+allEqual xs = head xs == last xs && allEqual ((init . tail) xs)
 
 ------------------------------------------------------------------------------
 -- Ex 2: implement the function distinct which returns True if all
@@ -54,7 +54,7 @@ allEqual xs = head xs == last xs && (allEqual $ (init . tail) xs)
 --   distinct [1,2] ==> True
 
 distinct :: Eq a => [a] -> Bool
-distinct x = length x == (length $ nub x)
+distinct x = length x == length (nub x)
 
 ------------------------------------------------------------------------------
 -- Ex 3: implement the function middle that returns the middle value
@@ -86,7 +86,7 @@ middle x y z = (!!) (sort [x, y, z]) 1
 
 rangeOf :: (Ord a, Num a) => [a] -> a
 rangeOf xs = last sorted - head sorted
-    where sorted = sortBy compare xs
+    where sorted = sort xs
 
 ------------------------------------------------------------------------------
 -- Ex 5: given a (non-empty) list of (non-empty) lists, return the longest
@@ -108,8 +108,8 @@ longest :: (Ord a) => [[a]] -> [a]
 longest [x] = x
 longest [x, y] = longest' x y
 longest (x1 : x2 : xs) 
-    | length x1 > length x2 = longest $ [x1] ++ xs
-    | length x2 > length x1 = longest $ [x2] ++ xs
+    | length x1 > length x2 = longest $ x1 : xs
+    | length x2 > length x1 = longest $ x2 : xs
     | otherwise = longest $ longest [[x1], [x2]] ++ xs
 
 longest' :: (Ord a) => [a] -> [a] -> [a]
@@ -133,7 +133,7 @@ longest' x y
 --   incrementKey 'a' [('a',3.4)] ==> [('a',4.4)]
 
 incrementKey :: (Ord k, Num v) => k -> [(k,v)] -> [(k,v)]
-incrementKey k m = map (\t -> if fst t == k then (fst t, snd t + 1) else t) m
+incrementKey k = map (\ t -> if fst t == k then (fst t, snd t + 1) else t)
 
 ------------------------------------------------------------------------------
 -- Ex 7: compute the average of a list of values of the Fractional
