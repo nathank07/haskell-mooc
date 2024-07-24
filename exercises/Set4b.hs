@@ -19,7 +19,7 @@ import Mooc.Todo
 --   countNothings [Just 1, Nothing, Just 3, Nothing]  ==>  2
 
 countNothings :: [Maybe a] -> Int
-countNothings xs = foldr countHelper 0 xs
+countNothings = foldr countHelper 0
 
 countHelper (Just x) = (+) 0
 countHelper Nothing = (+) 1
@@ -36,7 +36,7 @@ myMaximum :: [Int] -> Int
 myMaximum [] = 0
 myMaximum (x:xs) = foldr maxHelper x xs
 
-maxHelper curr maxi = max curr maxi
+maxHelper = max
 
 ------------------------------------------------------------------------------
 -- Ex 3: compute the sum and length of a list with a fold. Define
@@ -51,7 +51,7 @@ maxHelper curr maxi = max curr maxi
 
 
 sumAndLength :: [Double] -> (Double,Int)
-sumAndLength xs = foldr slHelper slStart xs
+sumAndLength = foldr slHelper slStart
 
 slStart = (0.0, 0)
 slHelper curr total = (fst total + curr, snd total + 1) 
@@ -66,7 +66,7 @@ slHelper curr total = (fst total + curr, snd total + 1)
 --   myConcat [[1,2,3],[4,5],[6]] ==> [1,2,3,4,5,6]
 
 myConcat :: [[a]] -> [a]
-myConcat xs = foldr concatHelper concatStart xs
+myConcat = foldr concatHelper concatStart
 
 concatStart = []
 concatHelper xs ys = xs ++ ys
@@ -81,11 +81,11 @@ concatHelper xs ys = xs ++ ys
 --   largest [1,3,2,3] ==> [3,3]
 
 largest :: [Int] -> [Int]
-largest xs = foldr largestHelper [] xs
+largest = foldr largestHelper []
 
 largestHelper :: Ord a => a -> [a] -> [a]
 largestHelper x xs
-    | length xs == 0 = [x] 
+    | null xs = [x] 
     | head xs == x = x : xs
     | head xs > x = xs
     | head xs < x = [x]
@@ -100,7 +100,7 @@ largestHelper x xs
 --   myHead [1,2,3]  ==>  Just 1
 
 myHead :: [a] -> Maybe a
-myHead xs = foldr headHelper Nothing xs
+myHead = foldr headHelper Nothing
 
 headHelper x _ = Just x
 
@@ -115,7 +115,7 @@ headHelper x _ = Just x
 --   myLast [1,2,3] ==> Just 3
 
 myLast :: [a] -> Maybe a
-myLast xs = foldr lastHelper Nothing xs
+myLast = foldr lastHelper Nothing
 
 lastHelper x Nothing = Just x
 lastHelper x y = y
