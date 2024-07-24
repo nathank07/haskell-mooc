@@ -133,7 +133,7 @@ longest' x y
 --   incrementKey 'a' [('a',3.4)] ==> [('a',4.4)]
 
 incrementKey :: (Ord k, Num v) => k -> [(k,v)] -> [(k,v)]
-incrementKey k = map (\ t -> if fst t == k then (fst t, snd t + 1) else t)
+incrementKey k = map (\t -> if fst t == k then (fst t, snd t + 1) else t)
 
 ------------------------------------------------------------------------------
 -- Ex 7: compute the average of a list of values of the Fractional
@@ -148,7 +148,7 @@ incrementKey k = map (\ t -> if fst t == k then (fst t, snd t + 1) else t)
 -- length to a Fractional
 
 average :: Fractional a => [a] -> a
-average xs = todo
+average xs = sum xs / fromIntegral (length xs)
 
 ------------------------------------------------------------------------------
 -- Ex 8: given a map from player name to score and two players, return
@@ -167,7 +167,8 @@ average xs = todo
 --     ==> "Lisa"
 
 winner :: Map.Map String Int -> String -> String -> String
-winner scores player1 player2 = todo
+winner scores player1 player2 = if find player1 >= find player2 then player1 else player2
+    where find k = Map.lookup k scores
 
 ------------------------------------------------------------------------------
 -- Ex 9: compute how many times each value in the list occurs. Return
@@ -181,8 +182,13 @@ winner scores player1 player2 = todo
 --   freqs [False,False,False,True]
 --     ==> Map.fromList [(False,3),(True,1)]
 
+f :: (Num a) => Maybe a -> Maybe a
+f (Just x) = Just $ x + 1
+f _ = Just 1
+
 freqs :: (Eq a, Ord a) => [a] -> Map.Map a Int
-freqs xs = todo
+freqs = foldr helper Map.empty 
+    where helper = Map.alter f 
 
 ------------------------------------------------------------------------------
 -- Ex 10: recall the withdraw example from the course material. Write a
