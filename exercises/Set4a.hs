@@ -215,7 +215,13 @@ freqs = foldr (Map.alter f) Map.empty
 --     ==> fromList [("Bob",100),("Mike",50)]
 
 transfer :: String -> String -> Int -> Map.Map String Int -> Map.Map String Int
-transfer from to amount bank = todo
+transfer from to amount bank 
+    | not (Map.member from bank && Map.member to bank) = bank
+    | bal from < amount = bank
+    | (bal from + bal to) < 0 = bank
+    | amount < 0 = bank
+    | otherwise = Map.insert from (bal from - amount) $ Map.insert to (bal to + amount) bank
+    where bal x = Map.findWithDefault 0 x bank
 
 ------------------------------------------------------------------------------
 -- Ex 11: given an Array and two indices, swap the elements in the indices.
@@ -225,7 +231,8 @@ transfer from to amount bank = todo
 --         ==> array (1,4) [(1,"one"),(2,"three"),(3,"two"),(4,"four")]
 
 swap :: Ix i => i -> i -> Array i a -> Array i a
-swap i j arr = todo
+swap i j arr = arr // [(j, lookup i), (i, lookup j)]
+    where lookup = (!) arr
 
 ------------------------------------------------------------------------------
 -- Ex 12: given an Array, find the index of the largest element. You
@@ -235,5 +242,12 @@ swap i j arr = todo
 --
 -- Hint: check out Data.Array.indices or Data.Array.assocs
 
+
 maxIndex :: (Ix i, Ord a) => Array i a -> i
-maxIndex = todo
+maxIndex arr = foldr changeToHighest (head indices) indices
+    where indices = Data.Array.indices arr
+          lookup = (!) arr
+          changeToHighest curr max = if lookup curr > lookup max 
+                                     then curr 
+                                     else max
+          
