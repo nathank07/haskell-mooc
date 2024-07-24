@@ -187,8 +187,7 @@ f (Just x) = Just $ x + 1
 f _ = Just 1
 
 freqs :: (Eq a, Ord a) => [a] -> Map.Map a Int
-freqs = foldr helper Map.empty 
-    where helper = Map.alter f 
+freqs = foldr (Map.alter f) Map.empty 
 
 ------------------------------------------------------------------------------
 -- Ex 10: recall the withdraw example from the course material. Write a
