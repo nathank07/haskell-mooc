@@ -6,6 +6,7 @@
 module Set5a where
 
 import Mooc.Todo
+import GHC.Conc (yield)
 
 ------------------------------------------------------------------------------
 -- Ex 1: Define the type Vehicle that has four constructors: Bike,
@@ -218,7 +219,6 @@ rgbMix :: [Double] -> [Double] -> [Double]
 rgbMix [x1, y1, z1] [x2, y2, z2] = [avg x1 x2, avg y1 y2, avg z1 z2]
     where avg a1 a2 = (a1 + a2) / 2
 
-
 ------------------------------------------------------------------------------
 -- Ex 9: define a parameterized datatype OneOrTwo that contains one or
 -- two values of the given type. The constructors should be called One and Two.
@@ -227,6 +227,7 @@ rgbMix [x1, y1, z1] [x2, y2, z2] = [avg x1 x2, avg y1 y2, avg z1 z2]
 --   One True         ::  OneOrTwo Bool
 --   Two "cat" "dog"  ::  OneOrTwo String
 
+data OneOrTwo x = One x | Two x x
 
 ------------------------------------------------------------------------------
 -- Ex 10: define a recursive datatype KeyVals for storing a set of
@@ -247,14 +248,20 @@ rgbMix [x1, y1, z1] [x2, y2, z2] = [avg x1 x2, avg y1 y2, avg z1 z2]
 -- Also define the functions toList and fromList that convert between
 -- KeyVals and lists of pairs.
 
-data KeyVals k v = KeyValsUndefined
+data KeyVals k v = Empty | Pair k v (KeyVals k v)
   deriving Show
 
 toList :: KeyVals k v -> [(k,v)]
-toList = todo
+toList Empty = []
+toList (Pair k v rest) = (k, v) : toList rest
 
 fromList :: [(k,v)] -> KeyVals k v
-fromList = todo
+fromList x = fromList' x Empty
+
+fromList' :: [(k, v)] -> KeyVals k v -> KeyVals k v
+fromList' [] _ = Empty
+fromList' [(k, v)] x = Pair k v x
+fromList' (x : xs) _ = fromList' [x] (fromList' xs Empty)
 
 ------------------------------------------------------------------------------
 -- Ex 11: The data type Nat is the so called Peano
@@ -271,10 +278,18 @@ data Nat = Zero | PlusOne Nat
   deriving (Show,Eq)
 
 fromNat :: Nat -> Int
-fromNat n = todo
+fromNat Zero = 0
+fromNat (PlusOne x) = 1 + fromNat x
 
 toNat :: Int -> Maybe Nat
-toNat z = todo
+toNat z 
+    | z < 0 = Nothing
+    | otherwise = Just $ getNatTo Zero z 
+
+getNatTo :: Nat -> Int -> Nat
+getNatTo nat desired 
+    | fromNat nat == desired = nat
+    | otherwise = getNatTo (PlusOne nat) desired
 
 ------------------------------------------------------------------------------
 -- Ex 12: While pleasingly simple in its definition, the Nat datatype is not
@@ -334,10 +349,36 @@ inc (O b) = I b
 inc (I b) = O (inc b)
 
 prettyPrint :: Bin -> String
-prettyPrint = todo
+prettyPrint End = ""
+prettyPrint (O x) = prettyPrint x ++ "0"
+prettyPrint (I x) = prettyPrint x ++ "1"
 
 fromBin :: Bin -> Int
-fromBin = todo
+fromBin x = fromBin' x 0
+
+fromBin' :: Bin -> Int -> Int
+fromBin' (O x) pos = fromBin' x (pos + 1)
+fromBin' (I x) pos = 2 ^ pos + fromBin' x (pos + 1)
+fromBin' End _ = 0
+
+binLength :: Bin -> Int
+binLength End = 1
+binLength (I x) = 1 + binLength x
+binLength (O x) = 1 + binLength x
 
 toBin :: Int -> Bin
-toBin = todo
+toBin = toBin' -- reverseBin . toBin' 
+
+toBin' :: Int -> Bin
+toBin' x
+    | x == 1 = I End
+    | x == 0 = O End
+    | mod x 2 == 1 = I $ toBin' $ div x 2
+    | mod x 2 == 0 = O $ toBin' $ div x 2
+
+-- reverseBin :: Bin -> Bin
+-- reverseBin = go End
+--     where go new End = new
+--           go new (I x) = go (I new) x
+--           go new (O x) = go (O new) x
+          
