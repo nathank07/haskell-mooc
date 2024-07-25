@@ -361,11 +361,6 @@ fromBin' (O x) pos = fromBin' x (pos + 1)
 fromBin' (I x) pos = 2 ^ pos + fromBin' x (pos + 1)
 fromBin' End _ = 0
 
-binLength :: Bin -> Int
-binLength End = 1
-binLength (I x) = 1 + binLength x
-binLength (O x) = 1 + binLength x
-
 toBin :: Int -> Bin
 toBin = toBin' -- reverseBin . toBin' 
 
