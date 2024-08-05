@@ -15,17 +15,14 @@ data Country = Finland | Switzerland | Norway
 
 instance Eq Country where
     (==) :: Country -> Country -> Bool
-    Finland == Switzerland = False
-    Finland == Norway = False
-    Finland == Finland = True
-    x == Finland = Finland == x
-    Switzerland == Norway = False
-    Switzerland == Switzerland = True
-    x == Switzerland = Switzerland == x
-    Norway == Norway = True
+    x == y = case (x, y) of
+        (Finland, Finland) -> True
+        (Switzerland, Switzerland) -> True
+        (Norway, Norway) -> True
+        otherwise -> False
     
     (/=) :: Country -> Country -> Bool
-    x /= y  = not (x == y)
+    x /= y = not (x == y)
 
 ------------------------------------------------------------------------------
 -- Ex 2: implement an Ord instance for Country so that
@@ -46,9 +43,9 @@ instance Ord Country where
   (<=) :: Country -> Country -> Bool
   (<=) x y = True -- and me?
   min :: Country -> Country -> Country
-  min x y = if compare x y == LT then x else y
+  min x y = if x < y then x else y
   max :: Country -> Country -> Country
-  max x y = if compare x y == GT then x else y
+  max x y = if x > y then x else y
 
 ------------------------------------------------------------------------------
 -- Ex 3: Implement an Eq instance for the type Name which contains a String.
