@@ -1,4 +1,5 @@
 -- Exercise set 6: defining classes and instances
+{-# LANGUAGE InstanceSigs #-}
 
 module Set6 where
 
@@ -13,7 +14,18 @@ data Country = Finland | Switzerland | Norway
   deriving Show
 
 instance Eq Country where
-  (==) = todo
+    (==) :: Country -> Country -> Bool
+    Finland == Switzerland = False
+    Finland == Norway = False
+    Finland == Finland = True
+    x == Finland = Finland == x
+    Switzerland == Norway = False
+    Switzerland == Switzerland = True
+    x == Switzerland = Switzerland == x
+    Norway == Norway = True
+    
+    (/=) :: Country -> Country -> Bool
+    x /= y  = not (x == y)
 
 ------------------------------------------------------------------------------
 -- Ex 2: implement an Ord instance for Country so that
@@ -22,10 +34,21 @@ instance Eq Country where
 -- Remember minimal complete definitions!
 
 instance Ord Country where
-  compare = todo -- implement me?
-  (<=) = todo -- and me?
-  min = todo -- and me?
-  max = todo -- and me?
+  compare :: Country -> Country -> Ordering
+  compare x y = case (x, y) of
+    (Finland, Norway) -> LT
+    (Finland, Switzerland) -> LT
+    (Norway, Switzerland) -> LT
+    (Switzerland, Norway) -> GT
+    (Switzerland, Finland) -> GT
+    (Norway, Finland) -> GT
+    _ -> EQ
+  (<=) :: Country -> Country -> Bool
+  (<=) x y = True -- and me?
+  min :: Country -> Country -> Country
+  min x y = if compare x y == LT then x else y
+  max :: Country -> Country -> Country
+  max x y = if compare x y == GT then x else y
 
 ------------------------------------------------------------------------------
 -- Ex 3: Implement an Eq instance for the type Name which contains a String.
