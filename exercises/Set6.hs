@@ -5,6 +5,7 @@ module Set6 where
 
 import Mooc.Todo
 import Data.Char (toLower)
+import Data.Ratio (Ratio)
 
 ------------------------------------------------------------------------------
 -- Ex 1: define an Eq instance for the type Country below. You'll need
@@ -61,7 +62,9 @@ data Name = Name String
   deriving Show
 
 instance Eq Name where
-  (==) = todo
+  (==) :: Name -> Name -> Bool
+  (Name [x]) == (Name [y]) = toLower x == toLower y
+  (Name (x : xs)) == (Name (y : ys)) = length xs == length ys && toLower x == toLower y && Name xs == Name ys
 
 ------------------------------------------------------------------------------
 -- Ex 4: here is a list type parameterized over the type it contains.
@@ -75,7 +78,11 @@ data List a = Empty | LNode a (List a)
   deriving Show
 
 instance Eq a => Eq (List a) where
-  (==) = todo
+  (==) :: Eq a => List a -> List a -> Bool
+  Empty == Empty = True
+  _ == Empty = False
+  Empty == _ = False
+  (LNode x xs) == (LNode y ys) = x == y && xs == ys 
 
 ------------------------------------------------------------------------------
 -- Ex 5: below you'll find two datatypes, Egg and Milk. Implement a
@@ -95,6 +102,17 @@ data Egg = ChickenEgg | ChocolateEgg
 data Milk = Milk Int -- amount in litres
   deriving Show
 
+class Price a where
+    price :: a -> Int
+
+instance Price Egg where
+    price :: Egg -> Int
+    price ChickenEgg   = 20
+    price ChocolateEgg = 30
+
+instance Price Milk where
+    price :: Milk -> Int
+    price (Milk x) = 15 * x
 
 ------------------------------------------------------------------------------
 -- Ex 6: define the necessary instance hierarchy in order to be able
@@ -105,6 +123,15 @@ data Milk = Milk Int -- amount in litres
 -- price [Just ChocolateEgg, Nothing, Just ChickenEgg]  ==> 50
 -- price [Nothing, Nothing, Just (Milk 1), Just (Milk 2)]  ==> 45
 
+instance Price a => Price [a] where
+    price :: [a] -> Int
+    price [] = 0
+    price (x : xs) = price x + price xs 
+
+instance Price a => Price (Maybe a) where
+    price :: Maybe a -> Int
+    price Nothing = 0
+    price (Just x) = price x
 
 ------------------------------------------------------------------------------
 -- Ex 7: below you'll find the datatype Number, which is either an
@@ -116,6 +143,13 @@ data Milk = Milk Int -- amount in litres
 data Number = Finite Integer | Infinite
   deriving (Show,Eq)
 
+instance Ord Number where
+    compare :: Number -> Number -> Ordering
+    compare x y = case (x, y) of
+        (Finite _, Infinite) -> LT
+        (Infinite, Finite _) -> GT
+        (Infinite, Infinite) -> EQ
+        (Finite x, Finite y) -> compare x y
 
 ------------------------------------------------------------------------------
 -- Ex 8: rational numbers have a numerator and a denominator that are
@@ -141,7 +175,8 @@ data RationalNumber = RationalNumber Integer Integer
   deriving Show
 
 instance Eq RationalNumber where
-  p == q = todo
+  (==) :: RationalNumber -> RationalNumber -> Bool
+  (RationalNumber n1 d1) == (RationalNumber n2 d2) = n1 * d2 == n2 * d1
 
 ------------------------------------------------------------------------------
 -- Ex 9: implement the function simplify, which simplifies a rational
@@ -161,7 +196,8 @@ instance Eq RationalNumber where
 -- Hint: Remember the function gcd?
 
 simplify :: RationalNumber -> RationalNumber
-simplify p = todo
+simplify (RationalNumber n d) = RationalNumber (n `div` factor) (d `div` factor)
+    where factor = gcd n d
 
 ------------------------------------------------------------------------------
 -- Ex 10: implement the typeclass Num for RationalNumber. The results
@@ -182,12 +218,28 @@ simplify p = todo
 --   signum (RationalNumber 0 2)             ==> RationalNumber 0 1
 
 instance Num RationalNumber where
-  p + q = todo
-  p * q = todo
-  abs q = todo
-  signum q = todo
-  fromInteger x = todo
-  negate q = todo
+  (+) :: RationalNumber -> RationalNumber -> RationalNumber
+  (RationalNumber n1 d1) + (RationalNumber n2 d2) = simplify $ RationalNumber (lcmn n1 d1 + lcmn n2 d2) lcmd
+        where lcmn n d = max (div d lcmd) (div lcmd d) * n
+              lcmd = lcm d1 d2
+
+  (*) :: RationalNumber -> RationalNumber -> RationalNumber
+  (RationalNumber n1 d1) * (RationalNumber n2 d2) = simplify $ RationalNumber (n1 * n2) (d1 * d2)
+
+  abs :: RationalNumber -> RationalNumber
+  abs (RationalNumber n d) = RationalNumber (abs n) d
+
+  signum :: RationalNumber -> RationalNumber
+  signum (RationalNumber n d)
+        | n > 0 = 1
+        | n < 0 = -1
+        | otherwise = 0
+    
+  fromInteger :: Integer -> RationalNumber
+  fromInteger x = RationalNumber x 1
+  
+  negate :: RationalNumber -> RationalNumber
+  negate (RationalNumber n d) = RationalNumber (-n) d
 
 ------------------------------------------------------------------------------
 -- Ex 11: a class for adding things. Define a class Addable with a
@@ -202,6 +254,21 @@ instance Num RationalNumber where
 --   add [1,2] [3,4]        ==>  [1,2,3,4]
 --   add zero [True,False]  ==>  [True,False]
 
+class Addable a where
+    add :: a -> a -> a
+    zero :: a
+
+instance Addable Integer where
+    zero :: Integer
+    zero = 0
+    add :: Integer -> Integer -> Integer
+    add x y = x + y 
+
+instance Addable [a] where
+    zero :: [a]
+    zero = []
+    add :: [a] -> [a] -> [a]
+    add xs ys = xs ++ ys
 
 ------------------------------------------------------------------------------
 -- Ex 12: cycling. Implement a type class Cycle that contains a
@@ -233,3 +300,21 @@ data Color = Red | Green | Blue
 data Suit = Club | Spade | Diamond | Heart
   deriving (Show, Eq)
 
+class Cycle a where
+    step :: a -> a
+    stepMany :: Int -> a -> a
+    stepMany 0 a = a
+    stepMany x a = stepMany (x - 1) (step a)
+
+instance Cycle Color where
+    step :: Color -> Color
+    step Red = Green
+    step Green = Blue
+    step Blue = Red
+
+instance Cycle Suit where
+    step :: Suit -> Suit
+    step Club = Spade
+    step Spade = Diamond
+    step Diamond = Heart
+    step Heart = Club
