@@ -222,16 +222,16 @@ class Operation2 op where
 
 instance Operation2 Add2 where
   compute2 (Add2 i j) = i+j
-  show2 (Add2 i j) = (show i) ++ "+" ++ (show j)
+  show2 (Add2 i j) = show i ++ "+" ++ show j
 
 instance Operation2 Subtract2 where
   compute2 (Subtract2 i j) = i-j
-  show2 (Subtract2 i j) = (show i) ++ "-" ++ (show j)
+  show2 (Subtract2 i j) = show i ++ "-" ++ show j
 
 
 instance Operation2 Multiply2 where
   compute2 (Multiply2 a b) = a*b
-  show2 (Multiply2 i j) = (show i) ++ "*" ++ (show j)
+  show2 (Multiply2 i j) = show i ++ "*" ++ show j
 
 ------------------------------------------------------------------------------
 -- Ex 9: validating passwords. Below you'll find a type
@@ -259,8 +259,24 @@ data PasswordRequirement =
   | Or PasswordRequirement PasswordRequirement  -- or'ing
   deriving Show
 
+passwordContains :: Eq a => [a] -> a -> Bool
+passwordContains [] _ = False
+passwordContains (h:password) c = h == c || passwordContains password c
+
 passwordAllowed :: String -> PasswordRequirement -> Bool
-passwordAllowed = todo
+passwordAllowed xs (MinimumLength l)
+    | l == 0 = True
+    | length xs == 0 && l > 0 = False
+    | otherwise = passwordAllowed (tail xs) (MinimumLength $ l - 1)
+
+passwordAllowed [] (ContainsSome _) = True
+passwordAllowed _ (ContainsSome []) = False
+passwordAllowed xs (ContainsSome (y:ys)) = passwordContains xs y || passwordAllowed xs (ContainsSome ys)
+
+passwordAllowed xs (DoesNotContain y) = not $ passwordAllowed xs (ContainsSome y)
+
+passwordAllowed xs (And r1 r2) = passwordAllowed xs r1 && passwordAllowed xs r2
+passwordAllowed xs (Or r1 r2) = passwordAllowed xs r1 || passwordAllowed xs r2
 
 ------------------------------------------------------------------------------
 -- Ex 10: a DSL for simple arithmetic expressions with addition and
@@ -282,17 +298,24 @@ passwordAllowed = todo
 --     ==> "(3*(1+1))"
 --
 
-data Arithmetic = Todo
+data Arithmetic = Literal Integer
+                | Operation String Arithmetic Arithmetic
   deriving Show
 
 literal :: Integer -> Arithmetic
-literal = todo
+literal x = Literal x
 
 operation :: String -> Arithmetic -> Arithmetic -> Arithmetic
-operation = todo
+operation x y z = Operation x y z
 
 evaluate :: Arithmetic -> Integer
-evaluate = todo
+evaluate (Literal x) = x
+evaluate (Operation x y z) = case x of
+    "+" -> evaluate y + evaluate z
+    "-" -> evaluate y - evaluate z
+    "*" -> evaluate y * evaluate z
+    _ -> 0
 
 render :: Arithmetic -> String
-render = todo
+render (Literal x) = show x
+render (Operation x y z) = "(" ++ render y ++ x ++ render z ++ ")"
