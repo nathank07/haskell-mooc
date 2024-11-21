@@ -47,10 +47,10 @@ type Col   = Int
 type Coord = (Row, Col)
 
 nextRow :: Coord -> Coord
-nextRow (i,j) = todo
+nextRow (i,j) = (i + 1, 1)
 
 nextCol :: Coord -> Coord
-nextCol (i,j) = todo
+nextCol (i,j) = (i, j + 1)
 
 --------------------------------------------------------------------------------
 -- Ex 2: Implement the function prettyPrint that, given the size of
@@ -100,10 +100,18 @@ nextCol (i,j) = todo
 -- takes O(n^3) time. Just ignore the previous sentence, if you're not familiar
 -- with the O-notation.)
 
+
 type Size = Int
 
+getRowQueens :: Size -> [Coord] -> [Int]
+getRowQueens s queens = map h (filter f queens)
+    where f (i, j) = i == s
+          h (i, j) = j
+
 prettyPrint :: Size -> [Coord] -> String
-prettyPrint = todo
+prettyPrint 0 _ = ""
+prettyPrint s queens = filter (/= ' ') $ unwords [y | x <- [1..s], let y = unwords $ rowBuilder x ++ ["\n"]]
+    where rowBuilder s2 = [y | x <- [1..s], let y = if elem x $ getRowQueens s2 queens then "Q" else "."]
 
 --------------------------------------------------------------------------------
 -- Ex 3: The task in this exercise is to define the relations sameRow, sameCol,
@@ -127,16 +135,22 @@ prettyPrint = todo
 --   sameAntidiag (500,5) (5,500) ==> True
 
 sameRow :: Coord -> Coord -> Bool
-sameRow (i,j) (k,l) = todo
+sameRow (i,j) (k,l) = i == k
 
 sameCol :: Coord -> Coord -> Bool
-sameCol (i,j) (k,l) = todo
+sameCol (i,j) (k,l) = j == l
 
 sameDiag :: Coord -> Coord -> Bool
-sameDiag (i,j) (k,l) = todo
+sameDiag (i,j) (k,l) = match (i, j) (k, l) || match (k, l) (i, j)
+    where match (i, j) (k, l) | i > k || j > l = False
+                              | i == k && j == l = True
+                              | otherwise = match (i + 1, j + 1) (k, l)
 
 sameAntidiag :: Coord -> Coord -> Bool
-sameAntidiag (i,j) (k,l) = todo
+sameAntidiag (i,j) (k,l) = match (i, j) (k, l) || match (k, l) (i, j)
+    where match (i, j) (k, l) | i < k || j > l = False
+                              | i == k && j == l = True
+                              | otherwise = match (i - 1, j + 1) (k, l)
 
 --------------------------------------------------------------------------------
 -- Ex 4: In chess, a queen may capture another piece in the same row, column,
