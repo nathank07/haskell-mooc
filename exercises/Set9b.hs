@@ -205,7 +205,8 @@ type Candidate = Coord
 type Stack     = [Coord]
 
 danger :: Candidate -> Stack -> Bool
-danger = todo
+danger loc queens = length (filter id (map f queens)) /= 0
+    where f q = sameRow q loc || sameCol q loc || sameDiag q loc || sameAntidiag q loc
 
 --------------------------------------------------------------------------------
 -- Ex 5: In this exercise, the task is to write a modified version of
