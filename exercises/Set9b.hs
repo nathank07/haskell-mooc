@@ -293,11 +293,13 @@ prettyPrint2 s queens = filter (/= ' ') $ unwords [y | x <- [1..s], let y = unwo
 --     Q#######
 
 fixFirst :: Size -> Stack -> Maybe Stack
-fixFirst n s = if length stack > 0 then Just stack else Nothing
-    where f (i, j) coords | j > n = coords ++ [(i, j)]
-                          | danger' (i, j) coords = f (i, j + 1) coords 
-                          | otherwise = coords ++ [(i, j)]
-          stack = filter (\(i, j) -> i /= -1 && j < n) $ foldr f [] s -- possibly foldl?
+fixFirst n s = case first of
+    Just value -> Just (value : tail s)
+    Nothing    -> Nothing
+    where f (i, j) | j > n = Nothing
+                   | danger (i, j) (tail s) = f (i, j + 1) 
+                   | otherwise = Just (i, j)
+          first = f (head s)
  
 --------------------------------------------------------------------------------
 -- Ex 7: We need two helper functions for stack management.
