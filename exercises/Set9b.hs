@@ -208,6 +208,10 @@ danger :: Candidate -> Stack -> Bool
 danger loc queens = length (filter id (map f queens)) /= 0
     where f q = sameRow q loc || sameCol q loc || sameDiag q loc || sameAntidiag q loc
 
+danger' :: Candidate -> Stack -> Bool
+danger' loc queens = not $ length (filter id (map f queens)) == 1 && elem loc queens
+    where f q = sameRow q loc || sameCol q loc || sameDiag q loc || sameAntidiag q loc
+
 --------------------------------------------------------------------------------
 -- Ex 5: In this exercise, the task is to write a modified version of
 -- prettyPrint that marks those empty squares with '#' that are in the
@@ -241,7 +245,10 @@ danger loc queens = length (filter id (map f queens)) /= 0
 -- solution to this version. Any working solution is okay in this exercise.)
 
 prettyPrint2 :: Size -> Stack -> String
-prettyPrint2 = todo
+prettyPrint2 s queens = filter (/= ' ') $ unwords [y | x <- [1..s], let y = unwords $ rowBuilder x ++ ["\n"]]
+    where rowBuilder s2 = [y | x <- [1..s], let y | elem x $ getRowQueens s2 queens = "Q" 
+                                                  | danger (s2, x) queens = "#" 
+                                                  | otherwise = "."]
 
 --------------------------------------------------------------------------------
 -- Ex 6: Now that we can check if a piece can be safely placed into a square in
@@ -286,8 +293,12 @@ prettyPrint2 = todo
 --     Q#######
 
 fixFirst :: Size -> Stack -> Maybe Stack
-fixFirst n s = todo
-
+fixFirst n s = if length stack > 0 then Just stack else Nothing
+    where f (i, j) coords | j > n = coords ++ [(i, j)]
+                          | danger' (i, j) coords = f (i, j + 1) coords 
+                          | otherwise = coords ++ [(i, j)]
+          stack = filter (\(i, j) -> i /= -1 && j < n) $ foldr f [] s -- possibly foldl?
+ 
 --------------------------------------------------------------------------------
 -- Ex 7: We need two helper functions for stack management.
 --
