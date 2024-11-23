@@ -1,9 +1,11 @@
+{-# LANGUAGE InstanceSigs #-}
 module Set10a where
 
 import Data.Char
 import Data.List
 
 import Mooc.Todo
+import Data.IntMap (alter)
 
 ------------------------------------------------------------------------------
 -- Ex 1: Given a list, produce a new list where each element of the
@@ -97,7 +99,7 @@ averages (x:xs) = go xs x 1
 --   take 10 (alternate [1,2] [3,4,5] 0) ==> [1,2,0,3,4,5,0,1,2,0]
 
 alternate :: [a] -> [a] -> a -> [a]
-alternate xs ys z = todo
+alternate xs ys z = xs ++ [z] ++ ys ++ [z] ++ alternate xs ys z
 
 ------------------------------------------------------------------------------
 -- Ex 6: Check if the length of a list is at least n. Make sure your
@@ -109,7 +111,9 @@ alternate xs ys z = todo
 --   lengthAtLeast 10 [0..]  ==> True
 
 lengthAtLeast :: Int -> [a] -> Bool
-lengthAtLeast = todo
+lengthAtLeast 0 _  = True
+lengthAtLeast _ [] = False
+lengthAtLeast n (x:xs) = lengthAtLeast (n - 1) xs
 
 ------------------------------------------------------------------------------
 -- Ex 7: The function chunks should take in a list, and a number n,
@@ -127,7 +131,8 @@ lengthAtLeast = todo
 --   take 4 (chunks 3 [0..]) ==> [[0,1,2],[1,2,3],[2,3,4],[3,4,5]]
 
 chunks :: Int -> [a] -> [[a]]
-chunks = todo
+chunks size xs | lengthAtLeast size xs = [take size xs] ++ chunks size (tail xs)
+               | otherwise = []   
 
 ------------------------------------------------------------------------------
 -- Ex 8: Define a newtype called IgnoreCase, that wraps a value of
@@ -143,7 +148,14 @@ chunks = todo
 --   ignorecase "abC" == ignorecase "ABc"  ==>  True
 --   ignorecase "acC" == ignorecase "ABc"  ==>  False
 
-ignorecase = todo
+newtype IgnoreCase = IgnoreCase String
+
+ignorecase :: String -> IgnoreCase
+ignorecase str = IgnoreCase (map Data.Char.toLower str)
+
+instance Eq IgnoreCase where
+    (==) :: IgnoreCase -> IgnoreCase -> Bool
+    (IgnoreCase x) == (IgnoreCase y) = map Data.Char.toLower x == map Data.Char.toLower y
 
 ------------------------------------------------------------------------------
 -- Ex 9: Here's the Room type and some helper functions from the
@@ -187,4 +199,13 @@ play room (d:ds) = case move room d of Nothing -> [describe room]
                                        Just r -> describe room : play r ds
 
 maze :: Room
-maze = todo
+maze = maze1
+
+maze1 :: Room
+maze1 = Room "Maze" [("Left", maze2), ("Right", maze3)]
+
+maze2 :: Room
+maze2 = Room "Deeper in the maze" [("Left", maze3), ("Right", maze1)]
+
+maze3 :: Room
+maze3 = Room  "Elsewhere in the maze" [("Left", maze1), ("Right", maze2)]
