@@ -20,7 +20,8 @@ import Mooc.Todo
 --   "xfoobarquux"
 
 appendAll :: IORef String -> [String] -> IO ()
-appendAll = todo
+appendAll op xs = do
+    modifyIORef op (\x -> x ++ filter (/= ' ') (unwords xs))
 
 ------------------------------------------------------------------------------
 -- Ex 2: Given two IORefs, swap the values stored in them.
@@ -35,7 +36,11 @@ appendAll = todo
 --   "x"
 
 swapIORefs :: IORef a -> IORef a -> IO ()
-swapIORefs = todo
+swapIORefs op1 op2 = do
+    first <- readIORef op1
+    second <- readIORef op2
+    writeIORef op1 second
+    writeIORef op2 first
 
 ------------------------------------------------------------------------------
 -- Ex 3: sometimes one bumps into IO operations that return IO
@@ -61,7 +66,9 @@ swapIORefs = todo
 --        replicateM l getLine
 
 doubleCall :: IO (IO a) -> IO a
-doubleCall op = todo
+doubleCall op = do
+    inner_op <- op
+    inner_op
 
 ------------------------------------------------------------------------------
 -- Ex 4: implement the analogue of function composition (the (.)
