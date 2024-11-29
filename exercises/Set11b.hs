@@ -6,6 +6,7 @@ import Data.IORef
 import System.IO
 
 import Mooc.Todo
+import Test.Hspec (xcontext)
 
 
 ------------------------------------------------------------------------------
@@ -87,7 +88,10 @@ doubleCall op = do
 --   3. return the result (of type b)
 
 compose :: (a -> IO b) -> (c -> IO a) -> c -> IO b
-compose op1 op2 c = todo
+compose op1 op2 c = do
+    a <- op2 c
+    op4 <- op1 a
+    return op4
 
 ------------------------------------------------------------------------------
 -- Ex 5: Reading lines from a file. The module System.IO defines
@@ -117,7 +121,14 @@ compose op1 op2 c = todo
 --   ["module Set11b where","","import Control.Monad"]
 
 hFetchLines :: Handle -> IO [String]
-hFetchLines = todo
+hFetchLines h = do
+    b <- hIsEOF h
+    if b then return [] else do
+        line <- hGetLine h
+        rest <- hFetchLines h
+        lines <- newIORef $ line : rest
+        rv <- readIORef lines
+        return rv
 
 ------------------------------------------------------------------------------
 -- Ex 6: Given a Handle and a list of line indexes, produce the lines
@@ -130,7 +141,14 @@ hFetchLines = todo
 -- handle.
 
 hSelectLines :: Handle -> [Int] -> IO [String]
-hSelectLines h nums = todo
+hSelectLines h nums = do
+    lines <- hFetchLines h
+    filteredIO <- newIORef $ go nums [] lines
+    filtered <- readIORef filteredIO
+    return filtered
+    where 
+        go [] acc lines = acc
+        go (x:xs) acc lines = go xs (acc ++ [(!!) lines (x - 1)]) lines
 
 ------------------------------------------------------------------------------
 -- Ex 7: In this exercise we see how a program can be split into a
@@ -171,4 +189,16 @@ counter ("print",n) = (True,show n,n)
 counter ("quit",n)  = (False,"bye bye",n)
 
 interact' :: ((String,st) -> (Bool,String,st)) -> st -> IO st
-interact' f state = todo
+interact' f state = do
+    line <- getLine
+    let new = f (line, state)
+    putStrLn $ getStr new
+    if getBool new then interact' f (getState new) 
+        else do
+            newStateIORef <- newIORef $ getState new
+            newStateIO <- readIORef newStateIORef
+            return newStateIO
+        where getBool  (x,_,_) = x
+              getStr   (_,y,_) = y
+              getState (_,_,z) = z
+
